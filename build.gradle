@@ -43,6 +43,71 @@ dependencyManagement {
     }
 }
 
+sourceSets {
+    integration {
+        java {
+            srcDir 'src/test/integration'
+        }
+        resources.srcDir 'src/test/integration/resources'
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+    acceptance {
+        java {
+            srcDir 'src/test/acceptance'
+        }
+        resources.srcDir 'src/test/acceptance/resources'
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    integrationImplementation.extendsFrom testImplementation
+    integrationRuntimeOnly.extendsFrom testRuntimeOnly
+    acceptanceImplementation.extendsFrom testImplementation
+    acceptanceRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// Unit tests (default 'test' task)
+test {
+    useJUnitPlatform {
+        excludeTags "integration", "acceptance"
+    }
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+// Integration tests
+tasks.register('integrationTest', Test) {
+    useJUnitPlatform {
+        includeTags "integration"
+    }
+    testClassesDirs = sourceSets.integration.output.classesDirs
+    classpath = sourceSets.integration.runtimeClasspath
+    shouldRunAfter test
+}
+
+// Acceptance tests
+tasks.register('acceptanceTest', Test) {
+    useJUnitPlatform {
+        includeTags "acceptance"
+    }
+    testClassesDirs = sourceSets.acceptance.output.classesDirs
+    classpath = sourceSets.acceptance.runtimeClasspath
+    shouldRunAfter integrationTest
+}
+
+// Composite verification task
+check.dependsOn integrationTest, acceptanceTest
+
+tasks.withType(Test).configureEach {
+    outputs.doNotCacheIf ("Disabling cache for integration/acceptance tests") {
+        it.name.contains('integration') || it.name.contains('acceptance')
+    }
+}
+
