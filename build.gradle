@@ -1,7 +1,11 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.*
+
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.3'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.4.0'
+    id 'io.spring.dependency-management' version '1.1.3'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'org.springframework.boot.experimental.thin-launcher' version "1.0.31.RELEASE"
 }
 
 group = 'portfolio'
@@ -13,23 +17,52 @@ java {
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 repositories {
     mavenCentral()
+    mavenLocal()
+    maven { url 'https://repo.spring.io/milestone' }
 }
 
 ext {
     set('springCloudVersion', "2024.0.0")
 }
 
+shadowJar {
+    archiveBaseName = 'dauntless'
+    archiveClassifier = 'lambda'
+    archiveVersion = ''
+
+    manifest {
+        inheritFrom(project.tasks.thinJar.manifest)
+		attributes 'Main-Class': 'portfolio.dauntless.DauntlessApplication'
+		attributes 'Start-Class': 'portfolio.dauntless.DauntlessApplication'
+    }
+
+	dependencies {
+		exclude(dependency('org.springframework.cloud:spring-cloud-starter-function-web'))
+	}
+
+    // Required for Spring
+    mergeServiceFiles()
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.schemas'
+    append 'META-INF/spring.tooling'
+    append 'META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports'
+    append 'META-INF/spring/org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration.imports'
+    transform(PropertiesFileTransformer) {
+        paths = ['META-INF/spring.factories']
+        mergeStrategy = "append"
+    }
+}
+
+assemble.dependsOn = [thinJar, shadowJar]
+
+shadowJar.mustRunAfter thinJar
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.cloud:spring-cloud-function-web'
+    implementation 'org.springframework.cloud:spring-cloud-function-adapter-aws'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

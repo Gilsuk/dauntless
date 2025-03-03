@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: dauntless
+  cloud:
+    function:
+      definition: entryPoint
