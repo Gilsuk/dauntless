@@ -1,84 +1,48 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Spring Cloud Function AWS Lambda deployment
+Description: >
+  Dauntless is a message broker based on HTTP
 
 Globals:
   Api:
     EndpointConfiguration: REGIONAL
 
-#  Function:
-#    Timeout: 15
-#    MemorySize: 512
-#    Runtime: java21
-#    Architectures:
-#      - arm64
-
 Resources:
   DauntlessLambda:
     Type: AWS::Serverless::Function
-#    Metadata:
-#      BuildMethod: makefile
-#      BuildProperties:
-#        Tasks: shadowJar
     Properties:
       FunctionName: dauntless
       Handler: org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest
       Runtime: java21
       MemorySize: 512
-#      Architectures:
-#        - arm64
+      Architectures:
+        - arm64
       SnapStart:
         ApplyOn: PublishedVersions
-      #      CodeUri: .
       CodeUri: ./build/libs/dauntless-lambda.jar
       Policies: AWSLambdaBasicExecutionRole
-      Timeout: 30
+      Timeout: 10
       Environment:
         Variables:
           MAIN_CLASS: portfolio.dauntless.DauntlessApplication
-          SPRING_CLOUD_FUNCTION_DEFINITION: entryPoint
       Events:
-        HttpApiEvent:
-          Type: HttpApi
+        Hello:
+          Type: Api
           Properties:
-            TimeoutInMillis: 20000
-            PayloadFormatVersion: '1.0'
+            Path: /api/hello
+            Method: GET
+            TimeoutInMillis: 10000
+        Uppercase:
+          Type: Api
+          Properties:
+            Path: /api/uppercase
+            Method: GET
+            TimeoutInMillis: 10000
 
 Outputs:
-  DauntlessApi:
-    Description: URL for application
-    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/uppercase'
-    Export:
-      Name: DauntlessAPI
-#  SpringCloudFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      Handler: org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest
-#      SnapStart:
-#        ApplyOn: PublishedVersions
-#      CodeUri: .
-#      Metadata:
-#        BuildMethod: gradle
-#        BuildProperties:
-#          BuildTask: shadowJar
-#          OutputDir: build/libs
-#      Environment:
-#        Variables:
-#          SPRING_CLOUD_FUNCTION_DEFINITION: hello
-#      Events:
-#        ApiGateway:
-#          Type: Api
-#          Properties:
-#            Path: /uppercase
-#            Method: post
-#            RestApiId: !Ref SpringCloudFunctionApi
-#
-#  SpringCloudFunctionApi:
-#    Type: AWS::Serverless::Api
-#    Properties:
-#      StageName: prod
-
-#Outputs:
-#  ApiUrl:
-#    Description: API Gateway endpoint URL
-#    Value: !Sub "https://${SpringCloudFunctionApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  DauntlessLambdaARN:
+    Description: Lambda Function ARN
+    Value: !GetAtt DauntlessLambda.Arn
+#  ContentBucketName:
+#    Description: "S3 bucket for uploading CloudFront content"
+#    Value: !Ref ContentBucket
