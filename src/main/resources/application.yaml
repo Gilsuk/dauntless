@@ -3,4 +3,7 @@ spring:
     name: dauntless
   cloud:
     function:
-      definition: entryPoint
+      definition: requestRouter
+
+springdoc:
+  version: '@springdoc.version@'

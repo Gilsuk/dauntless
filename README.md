@@ -4,6 +4,7 @@
 
 ```shell
 ./gradlew clean shadowJar
+./gradlew generateOpenApiDocs
 ```
 
 ## Deploy

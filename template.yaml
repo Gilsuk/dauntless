@@ -21,7 +21,7 @@ Resources:
         ApplyOn: PublishedVersions
       CodeUri: ./build/libs/dauntless-lambda.jar
       Policies: AWSLambdaBasicExecutionRole
-      Timeout: 10
+      Timeout: 20
       Environment:
         Variables:
           MAIN_CLASS: portfolio.dauntless.DauntlessApplication
