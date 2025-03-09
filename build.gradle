@@ -39,6 +39,10 @@ shadowJar {
 		attributes 'Start-Class': 'portfolio.dauntless.DauntlessApplication'
     }
 
+    dependencies {
+        exclude(dependency("org.springframework.boot:spring-boot-starter-reactor-netty"))
+    }
+
     // Required for Spring
     mergeServiceFiles()
     append 'META-INF/spring.handlers'
