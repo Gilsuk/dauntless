@@ -1,9 +1,15 @@
 spring:
   application:
     name: dauntless
+  profiles:
+    active: local
   cloud:
     function:
       definition: requestRouter
 
 springdoc:
-  version: '@springdoc.version@'
+  version: '1.0.0'
+
+swagger:
+  server:
+    url: 'http://localhost:8080'
