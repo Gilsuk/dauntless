@@ -38,3 +38,6 @@ out/
 
 ### SAM ###
 .aws-sam
+
+### Local settings ###
+application-local.yaml
